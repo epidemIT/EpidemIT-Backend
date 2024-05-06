@@ -46,7 +46,6 @@ func MentorHandlerGetAll(c *fiber.Ctx) error {
 			Company:   mentor.Company,
 			Specialty: mentor.Specialty,
 			Bio:       mentor.Bio,
-			Mentees:   mentor.Mentees,
 			Photo:     mentor.Photo,
 		}
 	}
@@ -75,7 +74,6 @@ func MentorHandlerGetByID(c *fiber.Ctx) error {
 		Company:   mentor.Company,
 		Specialty: mentor.Specialty,
 		Bio:       mentor.Bio,
-		Mentees:   mentor.Mentees,
 		Photo:     mentor.Photo,
 	}
 

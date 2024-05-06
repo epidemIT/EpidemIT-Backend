@@ -4,7 +4,7 @@ import (
 	"log"
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/database/migrations"
-	// "github.com/epidemIT/epidemIT-Backend/route"
+	"github.com/epidemIT/epidemIT-Backend/route"
 
 	"github.com/joho/godotenv"
 	"github.com/gofiber/fiber/v2"
@@ -21,7 +21,7 @@ func main() {
 
 	app := fiber.New()
 
-	// route.SetupRoutes(app)
+	route.SetupRoutes(app)
 
 	app.Listen(":8080")
 }

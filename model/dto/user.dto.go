@@ -11,6 +11,14 @@ type UserRegisterRequestDTO struct {
 	BirthDate string `json:"birth_date" validate:"required"`
 }
 
+type UserRegisterResponseDTO struct {
+	Message   string    `json:"message"`
+	ID        uuid.UUID `json:"id"`
+	FullName  string    `json:"full_name"`
+	Email     string    `json:"email"`
+	BirthDate string    `json:"birth_date"`
+}
+
 type UserGetResponseDTO struct {
 	ID        uuid.UUID `json:"id"`
 	FullName  string    `json:"full_name"`
