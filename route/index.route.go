@@ -19,19 +19,15 @@ func SetupRoutes(app *fiber.App) {
 	users.Get("/current", middleware.Auth, handler.GetCurrentUser)
 	users.Post("/login", handler.UserLogin)
 	users.Post("/talent/register", handler.UserRegister)
-	// users.Post("/partner/register", handler.UserPartnerRegister)
-	// users.Post("/mentor/register", middleware.Auth, handler.UserMentorRegister)
-
-	// partners := v1.Group("/partners")
-	// partners.Get("/", middleware.Auth, handler.PartnerHandlerGetAll)
 
 	mentors := v1.Group("/mentors")
+	mentors.Post("/", middleware.Auth, handler.MentorHandlerCreate)
 	mentors.Get("/", handler.MentorHandlerGetAll)
-	// mentors.Post("/:id/assign/:idProject", handler.MentorAssign)
+	mentors.Get("/:id", handler.MentorHandlerGetByID)
 
-	// projects := v1.Group("/projects")
-	// projects.Get("/", middleware.Auth, handler.ProjectHandlerGetAll)
-	// projects.Get("/available", middleware.Auth, handler.ProjectHandlerGetAllAvailable)
-	// projects.Post("/", middleware.Auth, handler.ProjectRegister)
-	// projects.Post("/:id/apply/register", middleware.Auth, handler.ProjectApplyRegister)
+	projects := v1.Group("/projects")
+	projects.Post("/", middleware.Auth, handler.ProjectHandlerCreate)
+	projects.Get("/", middleware.Auth, handler.ProjectHandlerGetAll)
+	projects.Get("/:id", middleware.Auth, handler.ProjectHandlerGetByID)
+	projects.Post("/:id/apply/register", middleware.Auth, handler.ProjectApplyRegister)
 }
