@@ -7,6 +7,7 @@ import (
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/model/dto"
 	"github.com/epidemIT/epidemIT-Backend/model/entity"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -83,32 +84,55 @@ func MentorHandlerGetByID(c *fiber.Ctx) error {
 //post method
 
 func MentorHandlerCreate(c *fiber.Ctx) error {
-	var requestDTO dto.MentorCreateRequestDTO
-	err := c.BodyParser(&requestDTO)
+	mentor := new(dto.MentorCreateRequestDTO)
 
-	if err != nil {
-		return handleError(c, "Failed to parse request body", err)
+	if err := c.BodyParser(mentor); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error parsing new mentor",
+			"error":   err.Error(),
+		})
 	}
 
-	mentor := entity.Mentor{
-		FullName:  requestDTO.FullName,
-		Email:     requestDTO.Email,
-		Company:   requestDTO.Company,
-		Specialty: requestDTO.Specialty,
-		Bio:       requestDTO.Bio,
-		Photo:     requestDTO.Photo,
+	validate := validator.New()
+	errValidate := validate.Struct(mentor)
+
+	if errValidate != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error validating new mentor",
+			"error":   errValidate.Error(),
+		})
 	}
 
-	results := database.DB.Create(&mentor)
+	newMentor := entity.Mentor{
+		FullName:  mentor.FullName,
+		Email:     mentor.Email,
+		Company:   mentor.Company,
+		Specialty: mentor.Specialty,
+		Bio:       mentor.Bio,
+		Photo:     mentor.Photo,
+	}
 
-	if results.Error != nil {
-		return handleError(c, "Failed to create mentor", results.Error)
+	var existingMentor entity.Mentor
+	res := database.DB.Where("email = ?", mentor.Email).First(&existingMentor)
+	if res.RowsAffected > 0 {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Email already exists",
+		})
+	}
+
+	newMentorRes := database.DB.Create(&newMentor)
+
+	if newMentorRes.Error != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": "Error creating new mentor",
+			"error":   newMentorRes.Error.Error(),
+		})
 	}
 
 	responseDTO := dto.MentorCreateResponseDTO{
 		Message:  "Mentor created successfully",
-		ID:       mentor.ID,
-		FullName: mentor.FullName,
+		ID:       newMentor.ID,
+		FullName: newMentor.FullName,
 	}
 
 	return c.Status(201).JSON(responseDTO)

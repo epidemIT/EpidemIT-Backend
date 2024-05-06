@@ -7,7 +7,7 @@ import (
 
 type MentorGetResponseDTO struct {
 	ID        uuid.UUID     `json:"id"`
-	FullName  string        `json:"name"`
+	FullName  string        `json:"full_name"`
 	Email     string        `json:"email"`
 	Company   string        `json:"company"`
 	Specialty string        `json:"specialty"`
@@ -19,7 +19,7 @@ type MentorGetResponseDTO struct {
 }
 
 type MentorCreateRequestDTO struct {
-	FullName  string `json:"name" validate:"required"`
+	FullName  string `json:"full_name" validate:"required"`
 	Email     string `json:"email" validate:"required,email"`
 	Company   string `json:"company" validate:"required"`
 	Specialty string `json:"specialty" validate:"required"`
@@ -30,5 +30,5 @@ type MentorCreateRequestDTO struct {
 type MentorCreateResponseDTO struct {
 	Message  string    `json:"message"`
 	ID       uuid.UUID `json:"id"`
-	FullName string    `json:"name"`
+	FullName string    `json:"full_name"`
 }

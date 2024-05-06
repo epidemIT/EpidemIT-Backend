@@ -53,6 +53,7 @@ func UserRegister(c *fiber.Ctx) error {
 		Password:  string(hashedPassword),
 		BirthDate: birthDate,
 	}
+	
 	var existingUser entity.User
 	res := database.DB.Where("email = ?", user.Email).First(&existingUser)
 	if res.RowsAffected > 0 {
