@@ -3,14 +3,18 @@ package dto
 import (
 	"time"
 
+	"github.com/epidemIT/epidemIT-Backend/model/entity"
 	"github.com/google/uuid"
 )
 
 type ProjectRegisterRequestDTO struct {
 	Name        string    `json:"name" validate:"required"`
 	Description string    `json:"description" validate:"required"`
-	Deadline    string    `json:"deadline" validate:"required"`
-	PartnerID   uuid.UUID `json:"partner_id" validate:"required"`
+	Deadline    time.Time    `json:"deadline" validate:"required"`
+	PartnerName string    `json:"partner_name" validate:"required"`
+	PartnerDesc string    `json:"partner_description" validate:"required"`
+	Skills      []uuid.UUID `json:"skills" validate:"required"`
+	FirstMaterial uuid.UUID `json:"first_material" validate:"required"`
 }
 
 type ProjectRegisterResponseDTO struct {
@@ -22,18 +26,17 @@ type ProjectRegisterResponseDTO struct {
 }
 
 type ProjectGetResponseDTO struct {
-	ID                 uuid.UUID            `json:"id"`
-	Name               string               `json:"name"`
-	Description        string               `json:"description"`
-	Deadline           time.Time            `json:"deadline"`
-	PartnerName        string               `json:"partner_name"`
-	PartnerDescription string               `json:"partner_description"`
-	UserID             uuid.UUID            `json:"user_id"`
-	Users              []UserGetResponseDTO `json:"users"`
-	Skills             []string             `json:"skills"`
-	FirstMaterial      string               `json:"first_material"`
-	CreatedAt          time.Time            `json:"created_at"`
-	UpdatedAt          time.Time            `json:"updated_at"`
+	ID                 uuid.UUID      `json:"id"`
+	Name               string         `json:"name"`
+	ProjectDescription string         `json:"project_description"`
+	Deadline           time.Time      `json:"deadline"`
+	PartnerName        string         `json:"partner_name"`
+	PartnerDescription string         `json:"partner_description"`
+	Users              []entity.User `json:"users"`
+	Skills             []entity.Skill `json:"skills"`
+	FirstMaterial      uuid.UUID      `json:"first_material"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
 }
 
 //assumption : this is how we apply for a project

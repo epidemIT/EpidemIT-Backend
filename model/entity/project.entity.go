@@ -24,7 +24,7 @@ type Project struct {
 	Deadline           time.Time      `json:"deadline"`
 	PartnerName        string         `json:"partner_name"`
 	PartnerDescription string         `json:"partner_description"`
-	UserID             []User         `gorm:"many2many:user_project;"`
+	Users              []User         `gorm:"many2many:user_project;"`
 	Skills             []Skill        `gorm:"many2many:project_skill;"`
 	FirstMaterial      uuid.UUID      `json:"first_material"`
 	CreatedAt          time.Time      `json:"created_at"`
