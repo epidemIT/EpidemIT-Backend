@@ -14,7 +14,6 @@ type ProjectRegisterRequestDTO struct {
 	PartnerName string    `json:"partner_name" validate:"required"`
 	PartnerDesc string    `json:"partner_description" validate:"required"`
 	Skills      []uuid.UUID `json:"skills" validate:"required"`
-	FirstMaterial uuid.UUID `json:"first_material" validate:"required"`
 }
 
 type ProjectRegisterResponseDTO struct {
@@ -34,7 +33,6 @@ type ProjectGetResponseDTO struct {
 	PartnerDescription string         `json:"partner_description"`
 	Users              []entity.User `json:"users"`
 	Skills             []entity.Skill `json:"skills"`
-	FirstMaterial      uuid.UUID      `json:"first_material"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
 }

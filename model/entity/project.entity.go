@@ -26,7 +26,6 @@ type Project struct {
 	PartnerDescription string         `json:"partner_description"`
 	Users              []User         `gorm:"many2many:user_project;"`
 	Skills             []Skill        `gorm:"many2many:project_skill;"`
-	FirstMaterial      uuid.UUID      `json:"first_material"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
 	DeletedAt          gorm.DeletedAt `gorm:"index"`

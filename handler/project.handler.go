@@ -50,7 +50,6 @@ func ProjectHandlerGetAll(c *fiber.Ctx) error {
 			PartnerDescription: project.PartnerDescription,
 			Users:              project.Users,
 			Skills:             project.Skills,
-			FirstMaterial:      project.FirstMaterial,
 			CreatedAt:          project.CreatedAt,
 		}
 	}
@@ -78,7 +77,6 @@ func ProjectHandlerGetByID(c *fiber.Ctx) error {
 		PartnerDescription: project.PartnerDescription,
 		Users:              project.Users,
 		Skills:             project.Skills,
-		FirstMaterial:      project.FirstMaterial,
 		CreatedAt:          project.CreatedAt,
 	}
 
@@ -92,6 +90,7 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Invalid request body",
+			"error":   err.Error(),
 		})
 	}
 
@@ -101,7 +100,6 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 		Deadline:           requestDTO.Deadline,
 		PartnerName:        requestDTO.PartnerName,
 		PartnerDescription: requestDTO.PartnerDesc,
-		FirstMaterial:      requestDTO.FirstMaterial,
 	}
 
 	results := database.DB.Create(&project)
