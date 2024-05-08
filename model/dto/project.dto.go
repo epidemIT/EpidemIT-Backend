@@ -8,11 +8,12 @@ import (
 )
 
 type ProjectRegisterRequestDTO struct {
-	Name        string    `json:"name" validate:"required"`
-	Description string    `json:"description" validate:"required"`
-	Deadline    time.Time    `json:"deadline" validate:"required"`
-	PartnerName string    `json:"partner_name" validate:"required"`
-	PartnerDesc string    `json:"partner_description" validate:"required"`
+	Name        string      `json:"name" validate:"required"`
+	Description string      `json:"description" validate:"required"`
+	Deadline    time.Time   `json:"deadline" validate:"required"`
+	ImageURL    string      `json:"image_url"`
+	PartnerName string      `json:"partner_name" validate:"required"`
+	PartnerDesc string      `json:"partner_description" validate:"required"`
 	Skills      []uuid.UUID `json:"skills" validate:"required"`
 }
 
@@ -22,6 +23,7 @@ type ProjectRegisterResponseDTO struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Deadline    time.Time `json:"deadline"`
+	ImageURL    string    `json:"image_url"`
 }
 
 type ProjectGetResponseDTO struct {
@@ -29,23 +31,11 @@ type ProjectGetResponseDTO struct {
 	Name               string         `json:"name"`
 	ProjectDescription string         `json:"project_description"`
 	Deadline           time.Time      `json:"deadline"`
+	ImageURL           string         `json:"image_url"`
 	PartnerName        string         `json:"partner_name"`
 	PartnerDescription string         `json:"partner_description"`
-	Users              []entity.User `json:"users"`
+	Users              []entity.User  `json:"users"`
 	Skills             []entity.Skill `json:"skills"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
-}
-
-//assumption : this is how we apply for a project
-
-type ProjectApplyRegisterRequestDTO struct {
-	WhyChoose string `json:"why_choose" validate:"required"`
-	TellUs    string `json:"tell_us" validate:"required"`
-}
-
-type ProjectApplyGetResponseDTO struct {
-	ID        uuid.UUID `json:"id"`
-	ProjectID uuid.UUID `json:"project_id"`
-	Status    string    `json:"status"`
 }

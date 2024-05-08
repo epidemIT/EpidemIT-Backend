@@ -46,6 +46,7 @@ func ProjectHandlerGetAll(c *fiber.Ctx) error {
 			Name:               project.Name,
 			ProjectDescription: project.ProjectDescription,
 			Deadline:           project.Deadline,
+			ImageURL:           project.ImageURL,
 			PartnerName:        project.PartnerName,
 			PartnerDescription: project.PartnerDescription,
 			Users:              project.Users,
@@ -73,6 +74,7 @@ func ProjectHandlerGetByID(c *fiber.Ctx) error {
 		Name:               project.Name,
 		ProjectDescription: project.ProjectDescription,
 		Deadline:           project.Deadline,
+		ImageURL:           project.ImageURL,
 		PartnerName:        project.PartnerName,
 		PartnerDescription: project.PartnerDescription,
 		Users:              project.Users,
@@ -98,6 +100,7 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 		Name:               requestDTO.Name,
 		ProjectDescription: requestDTO.Description,
 		Deadline:           requestDTO.Deadline,
+		ImageURL:           requestDTO.ImageURL,
 		PartnerName:        requestDTO.PartnerName,
 		PartnerDescription: requestDTO.PartnerDesc,
 	}
@@ -117,6 +120,7 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 		Name:        project.Name,
 		Description: project.ProjectDescription,
 		Deadline:    project.Deadline,
+		ImageURL:    project.ImageURL,
 	}
 
 	return c.Status(200).JSON(responseDTO)
@@ -134,7 +138,7 @@ func ProjectApplyRegister(c *fiber.Ctx) error {
 		})
 	}
 
-	body := new(dto.ProjectApplyRegisterRequestDTO)
+	body := new(dto.ProjectApplyRequestDTO)
 
 	if err := c.BodyParser(body); err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -163,7 +167,7 @@ func ProjectApplyRegister(c *fiber.Ctx) error {
 	}
 
 	var project entity.Project
-	err = database.DB.Where("id = ?", c.Params("id")).First(&project).Error
+	err = database.DB.Where("id = ?", body.ProjectID).First(&project).Error
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Error getting project",
@@ -172,6 +176,12 @@ func ProjectApplyRegister(c *fiber.Ctx) error {
 	}
 
 	project.Users = append(project.Users, user)
+
+	projectApply := entity.ProjectApply{
+		ProjectID: project.ID,
+		UserID:    user.ID,
+		Progress:  body.Progress,
+	}
 
 	results := database.DB.Save(&project)
 
@@ -182,7 +192,84 @@ func ProjectApplyRegister(c *fiber.Ctx) error {
 		})
 	}
 
+	results = database.DB.Create(&projectApply)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error applying to project",
+			"error":   results.Error,
+		})
+	}
+
 	return c.Status(201).JSON(fiber.Map{
-		"message": "Applied to project successfully",
+		"message":    "Applied to project successfully",
+		"id":         projectApply.ID,
+		"project_id": projectApply.ProjectID,
+		"user_id":    projectApply.UserID,
+		"progress":   projectApply.Progress,
 	})
+}
+
+func GetAllProjectAppliedByUserID(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := utils.VerifyToken(token)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error verifying token",
+			"error":   err.Error(),
+		})
+	}
+
+	var user entity.User
+	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting user",
+			"error":   err.Error(),
+		})
+	}
+
+	var projectApplies []entity.ProjectApply
+	results := database.DB.Where("user_id = ?", user.ID).Find(&projectApplies)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": results.Error,
+		})
+	}
+
+	responseDTO := make([]dto.ProjectApplyGetByUserIDResponseDTO, len(projectApplies))
+
+	for i, projectApply := range projectApplies {
+		var project entity.Project
+		results := database.DB.Where("id = ?", projectApply.ProjectID).First(&project)
+
+		if results.Error != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"message": results.Error,
+			})
+		}
+
+		responseDTO[i] = dto.ProjectApplyGetByUserIDResponseDTO{
+			ID: projectApply.ID,
+			UserID: user.ID,
+			Project: dto.ProjectGetResponseDTO{
+				ID:                 project.ID,
+				Name:               project.Name,
+				ProjectDescription: project.ProjectDescription,
+				Deadline:           project.Deadline,
+				ImageURL:           project.ImageURL,
+				PartnerName:        project.PartnerName,
+				PartnerDescription: project.PartnerDescription,
+				Users:              project.Users,
+				Skills:             project.Skills,
+				CreatedAt:          project.CreatedAt,
+			},
+			Progress: projectApply.Progress,
+		}
+	}
+
+	return c.Status(200).JSON(responseDTO)
 }

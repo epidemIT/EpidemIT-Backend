@@ -14,7 +14,7 @@ func RunMigrations() {
 		log.Fatal("Database connection is nil")
 	}
 
-	err := database.DB.AutoMigrate(&entity.User{}, &entity.Mentor{}, &entity.Project{})
+	err := database.DB.AutoMigrate(&entity.User{}, &entity.Mentor{}, &entity.Project{}, &entity.Skill{}, &entity.ProjectApply{})
 
 	if err != nil {
 		log.Fatal("Failed to migrate database", err)
