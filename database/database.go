@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -14,7 +13,7 @@ var DB *gorm.DB // DB Instance
 
 func InitDatabase() {
 	var err error
-	dsn := os.Getenv("DATABASE_URL")
+	dsn := "postgresql://adminepidemit212121:HgjdtIbXno9CUsRHOAIDSg@epidemit-cluster-9311.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full"
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
