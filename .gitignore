@@ -16,7 +16,6 @@
 
 # Dependency directories
 /vendor/
-/go.sum
 
 # Output files
 *.log
