@@ -1,13 +1,14 @@
 package main
 
 import (
-	"log"
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/database/migrations"
 	"github.com/epidemIT/epidemIT-Backend/route"
+	"log"
+	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -23,5 +24,10 @@ func main() {
 
 	route.SetupRoutes(app)
 
-	app.Listen(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Fatal(app.Listen(":" + port))
 }
