@@ -273,3 +273,65 @@ func GetAllProjectAppliedByUserID(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(responseDTO)
 }
+
+func GetProjectApplyByProjectIDAndUserID(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := utils.VerifyToken(token)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error verifying token",
+			"error":   err.Error(),
+		})
+	}
+
+	var user entity.User
+	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting user",
+			"error":   err.Error(),
+		})
+	}
+
+	projectID := c.Params("project_id")
+
+	var projectApply entity.ProjectApply
+	results := database.DB.Where("project_id = ? AND user_id = ?", projectID, user.ID).First(&projectApply)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": results.Error,
+		})
+	}
+
+	var project entity.Project
+	results = database.DB.Where("id = ?", projectApply.ProjectID).First(&project)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": results.Error,
+		})
+	}
+
+	responseDTO := dto.ProjectApplyGetByUserIDResponseDTO{
+		ID: projectApply.ID,
+		UserID: user.ID,
+		Project: dto.ProjectGetResponseDTO{
+			ID:                 project.ID,
+			Name:               project.Name,
+			ProjectDescription: project.ProjectDescription,
+			Deadline:           project.Deadline,
+			ImageURL:           project.ImageURL,
+			PartnerName:        project.PartnerName,
+			PartnerDescription: project.PartnerDescription,
+			Users:              project.Users,
+			Skills:             project.Skills,
+			CreatedAt:          project.CreatedAt,
+		},
+		Progress: projectApply.Progress,
+	}
+
+	return c.Status(200).JSON(responseDTO)
+}
