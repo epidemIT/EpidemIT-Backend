@@ -21,6 +21,11 @@ type Project struct {
 	ID                 uuid.UUID      `json:"id" gorm:"primary_key;unique;type:uuid;default:uuid_generate_v4()"`
 	Name               string         `json:"name"`
 	ProjectDescription string         `json:"project_description"`
+	ShortDescription   string         `json:"short_description"`
+	MetodeBelajar      string         `json:"metode_belajar"`
+	PeralatanBelajar   string         `json:"peralatan_belajar"`
+	Silabus            string         `json:"silabus"`
+	TotalHours         int            `json:"total_hours"`
 	ImageURL           string         `json:"image_url"`
 	Deadline           time.Time      `json:"deadline"`
 	PartnerName        string         `json:"partner_name"`
