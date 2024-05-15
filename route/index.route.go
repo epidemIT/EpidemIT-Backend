@@ -30,6 +30,7 @@ func SetupRoutes(app *fiber.App) {
 	projects.Get("/", handler.ProjectHandlerGetAll)
 	projects.Post("/apply/register", middleware.Auth, handler.ProjectApplyRegister)
 	projects.Get("/:id", middleware.Auth, handler.ProjectHandlerGetByID)
+	projects.Post("/apply/financialaid", middleware.Auth, handler.SendFinancialAidEmail)
 
 	projectApply := v1.Group("/project-apply")
 	projectApply.Get("/user", middleware.Auth, handler.GetAllProjectAppliedByUserID)

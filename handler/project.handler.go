@@ -1,8 +1,14 @@
 package handler
 
 import (
+	"bytes"
+	"fmt"
+	"log"
+	"net/smtp"
+	"os"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/model/dto"
@@ -10,6 +16,50 @@ import (
 	"github.com/epidemIT/epidemIT-Backend/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
+)
+
+const (
+	emailTemplate = `
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<style>
+					body {
+						font-family: Arial, sans-serif;
+						background-color: #f7f7f7;
+						margin: 0;
+						padding: 20px;
+					}
+					.email-container {
+						background-color: #ffffff;
+						max-width: 600px;
+						margin: 0 auto;
+						padding: 20px;
+						border-radius: 5px;
+						box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+					}
+					.details-header {
+						font-weight: bold;
+					}
+				</style>
+					</head>
+					<body>
+						<div class="email-container">
+						<p>Dear Applicants, </p>
+						<p>We are delighted to inform you that your registration for the Financial Aid has been successfully received and confirmed.</p>
+						<p>Our team will review your application and get back to you as soon as possible. Please stay tuned for further updates.</p>
+						<p>Please keep this email for your records. In case you have any questions or need to make any changes to your registration details, please do not hesitate to contact us at <a href="mailto:bistleague@std.stei.itb.ac.id">gibran@epidemit.id</a> or +62 81290908333.</p>
+
+						<p>Once again, congratulations on your successful registration. We look forward to seeing you at the project. Best of luck with your preparations!</p>
+
+						<br />
+						<p>Sincerely,</p>
+						<p>EpidemIT Operations Team</p>
+						</div>
+					</body>
+					</html>
+			`
 )
 
 func ProjectHandlerGetAll(c *fiber.Ctx) error {
@@ -253,7 +303,7 @@ func GetAllProjectAppliedByUserID(c *fiber.Ctx) error {
 		}
 
 		responseDTO[i] = dto.ProjectApplyGetByUserIDResponseDTO{
-			ID: projectApply.ID,
+			ID:     projectApply.ID,
 			UserID: user.ID,
 			Project: dto.ProjectGetResponseDTO{
 				ID:                 project.ID,
@@ -316,7 +366,7 @@ func GetProjectApplyByProjectIDAndUserID(c *fiber.Ctx) error {
 	}
 
 	responseDTO := dto.ProjectApplyGetByUserIDResponseDTO{
-		ID: projectApply.ID,
+		ID:     projectApply.ID,
 		UserID: user.ID,
 		Project: dto.ProjectGetResponseDTO{
 			ID:                 project.ID,
@@ -334,4 +384,84 @@ func GetProjectApplyByProjectIDAndUserID(c *fiber.Ctx) error {
 	}
 
 	return c.Status(200).JSON(responseDTO)
+}
+
+func SendEmailHTML(to []string, subject, templateHTML string, data interface{}) error {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file", err)
+	}
+
+	from := os.Getenv("MAIL_USERNAME")
+	password := os.Getenv("MAIL_PASSWORD")
+
+	smtpHost := os.Getenv("MAIL_HOST")
+	smtpPort := os.Getenv("MAIL_PORT")
+
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+	var body bytes.Buffer
+
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: %s\n%s\n\n", subject, mimeHeaders)))
+
+	t, err := template.New("email").Parse(templateHTML)
+	if err != nil {
+		return err
+	}
+
+	err = t.Execute(&body, data)
+	if err != nil {
+		return err
+	}
+
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SendFinancialAidEmail(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+
+	claims, err := utils.VerifyToken(token)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error verifying token",
+			"error":   err.Error(),
+		})
+	}
+
+	var user entity.User
+	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting user",
+			"error":   err.Error(),
+		})
+	}
+
+	type EmailData struct {
+		Username string
+		Project  string
+	}
+
+	data := EmailData{
+		Username: user.FullName,
+	}
+
+	err = SendEmailHTML([]string{user.Email}, "Financial Aid Application - EpidemIT", emailTemplate, data)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error sending email",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Email sent successfully",
+	})
 }
