@@ -87,6 +87,14 @@ func ProjectHandlerGetAll(c *fiber.Ctx) error {
 		})
 	}
 
+	// get skills from project_skills table
+	for i, project := range projects {
+		var skills []entity.Skill
+		database.DB.Model(&project).Association("Skills").Find(&skills)
+
+		projects[i].Skills = skills
+	}
+
 	// Prepare response DTO
 	responseDTO := make([]dto.ProjectGetResponseDTO, len(projects))
 
@@ -95,6 +103,11 @@ func ProjectHandlerGetAll(c *fiber.Ctx) error {
 			ID:                 project.ID,
 			Name:               project.Name,
 			ProjectDescription: project.ProjectDescription,
+			ShortDescription:   project.ShortDescription,
+			MetodeBelajar:      project.MetodeBelajar,
+			PeralatanBelajar:   project.PeralatanBelajar,
+			Silabus:            project.Silabus,
+			TotalHours:         project.TotalHours,
 			Deadline:           project.Deadline,
 			ImageURL:           project.ImageURL,
 			PartnerName:        project.PartnerName,
@@ -119,10 +132,27 @@ func ProjectHandlerGetByID(c *fiber.Ctx) error {
 		})
 	}
 
+	// get skills from project_skills table
+	var skills []entity.Skill
+	database.DB.Model(&project).Association("Skills").Find(&skills)
+
+	project.Skills = skills
+
+	// get users from user_project table
+	var users []entity.User
+	database.DB.Model(&project).Association("Users").Find(&users)
+
+	project.Users = users
+
 	responseDTO := dto.ProjectGetResponseDTO{
 		ID:                 project.ID,
 		Name:               project.Name,
 		ProjectDescription: project.ProjectDescription,
+		ShortDescription:   project.ShortDescription,
+		MetodeBelajar:      project.MetodeBelajar,
+		PeralatanBelajar:   project.PeralatanBelajar,
+		Silabus:            project.Silabus,
+		TotalHours:         project.TotalHours,
 		Deadline:           project.Deadline,
 		ImageURL:           project.ImageURL,
 		PartnerName:        project.PartnerName,
@@ -149,6 +179,11 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 	project := entity.Project{
 		Name:               requestDTO.Name,
 		ProjectDescription: requestDTO.Description,
+		ShortDescription:   requestDTO.ShortDescription,
+		MetodeBelajar:      requestDTO.MetodeBelajar,
+		PeralatanBelajar:   requestDTO.PeralatanBelajar,
+		Silabus:            requestDTO.Silabus,
+		TotalHours:         requestDTO.TotalHours,
 		Deadline:           requestDTO.Deadline,
 		ImageURL:           requestDTO.ImageURL,
 		PartnerName:        requestDTO.PartnerName,
@@ -165,12 +200,17 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 	}
 
 	responseDTO := dto.ProjectRegisterResponseDTO{
-		ID:          project.ID,
-		Message:     "Project created successfully",
-		Name:        project.Name,
-		Description: project.ProjectDescription,
-		Deadline:    project.Deadline,
-		ImageURL:    project.ImageURL,
+		ID:               project.ID,
+		Message:          "Project created successfully",
+		Name:             project.Name,
+		Description:      project.ProjectDescription,
+		ShortDescription: project.ShortDescription,
+		MetodeBelajar:    project.MetodeBelajar,
+		PeralatanBelajar: project.PeralatanBelajar,
+		Silabus:          project.Silabus,
+		TotalHours:       project.TotalHours,
+		Deadline:         project.Deadline,
+		ImageURL:         project.ImageURL,
 	}
 
 	return c.Status(200).JSON(responseDTO)
@@ -309,6 +349,11 @@ func GetAllProjectAppliedByUserID(c *fiber.Ctx) error {
 				ID:                 project.ID,
 				Name:               project.Name,
 				ProjectDescription: project.ProjectDescription,
+				ShortDescription:   project.ShortDescription,
+				MetodeBelajar:      project.MetodeBelajar,
+				PeralatanBelajar:   project.PeralatanBelajar,
+				Silabus:            project.Silabus,
+				TotalHours:         project.TotalHours,
 				Deadline:           project.Deadline,
 				ImageURL:           project.ImageURL,
 				PartnerName:        project.PartnerName,
@@ -372,6 +417,11 @@ func GetProjectApplyByProjectIDAndUserID(c *fiber.Ctx) error {
 			ID:                 project.ID,
 			Name:               project.Name,
 			ProjectDescription: project.ProjectDescription,
+			ShortDescription:   project.ShortDescription,
+			MetodeBelajar:      project.MetodeBelajar,
+			PeralatanBelajar:   project.PeralatanBelajar,
+			Silabus:            project.Silabus,
+			TotalHours:         project.TotalHours,
 			Deadline:           project.Deadline,
 			ImageURL:           project.ImageURL,
 			PartnerName:        project.PartnerName,
@@ -443,7 +493,7 @@ func SendFinancialAidEmail(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
-
+  
 	type EmailData struct {
 		Username string
 		Project  string
@@ -464,4 +514,84 @@ func SendFinancialAidEmail(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Email sent successfully",
 	})
+}
+  
+ func ProjectHandlerGetAllAvailable(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+  claims, err := utils.VerifyToken(token)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error verifying token",
+			"error":   err.Error(),
+		})
+	}
+   
+  var user entity.User
+	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting user",
+			"error":   err.Error(),
+		})
+	}
+   
+	var projects []entity.Project
+	results := database.DB.Find(&projects)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": results.Error,
+		})
+	}
+
+	// Filter project yang belum pernah diambil oleh user
+	var availableProjects []entity.Project
+	for _, project := range projects {
+		var projectApplies []entity.ProjectApply
+		results := database.DB.Where("project_id = ? AND user_id = ?", project.ID, user.ID).Find(&projectApplies)
+
+		if results.Error != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"message": results.Error,
+			})
+		}
+
+		if len(projectApplies) == 0 {
+			availableProjects = append(availableProjects, project)
+		}
+	}
+
+	// get skills from project_skills table
+	for i, project := range availableProjects {
+		var skills []entity.Skill
+		database.DB.Model(&project).Association("Skills").Find(&skills)
+
+		availableProjects[i].Skills = skills
+	}
+
+	responseDTO := make([]dto.ProjectGetResponseDTO, len(availableProjects))
+
+	for i, project := range availableProjects {
+		responseDTO[i] = dto.ProjectGetResponseDTO{
+			ID:                 project.ID,
+			Name:               project.Name,
+			ProjectDescription: project.ProjectDescription,
+			ShortDescription:   project.ShortDescription,
+			MetodeBelajar:      project.MetodeBelajar,
+			PeralatanBelajar:   project.PeralatanBelajar,
+			Silabus:            project.Silabus,
+			TotalHours:         project.TotalHours,
+			Deadline:           project.Deadline,
+			ImageURL:           project.ImageURL,
+			PartnerName:        project.PartnerName,
+			PartnerDescription: project.PartnerDescription,
+			Users:              project.Users,
+			Skills:             project.Skills,
+			CreatedAt:          project.CreatedAt,
+		}
+	}
+
+	return c.Status(200).JSON(responseDTO)
 }
