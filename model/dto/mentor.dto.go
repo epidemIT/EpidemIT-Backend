@@ -14,6 +14,8 @@ type MentorGetResponseDTO struct {
 	Bio       string        `json:"bio"`
 	Photo     string        `json:"photo"`
 	Mentees   []entity.User `json:"mentees"`
+	Reviews   int           `json:"reviews"`
+	Sessions  int           `json:"sessions"`
 	CreatedAt string        `json:"created_at"`
 	UpdatedAt string        `json:"updated_at"`
 }
@@ -25,6 +27,8 @@ type MentorCreateRequestDTO struct {
 	Specialty string `json:"specialty" validate:"required"`
 	Bio       string `json:"bio" validate:"required"`
 	Photo     string `json:"photo" validate:"required"`
+	Reviews   int    `json:"reviews"`
+	Sessions  int    `json:"sessions"`
 }
 
 type MentorCreateResponseDTO struct {

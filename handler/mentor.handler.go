@@ -48,6 +48,8 @@ func MentorHandlerGetAll(c *fiber.Ctx) error {
 			Specialty: mentor.Specialty,
 			Bio:       mentor.Bio,
 			Photo:     mentor.Photo,
+			Reviews:   mentor.Reviews,
+			Sessions:  mentor.Sessions,
 		}
 	}
 
@@ -76,12 +78,12 @@ func MentorHandlerGetByID(c *fiber.Ctx) error {
 		Specialty: mentor.Specialty,
 		Bio:       mentor.Bio,
 		Photo:     mentor.Photo,
+		Reviews:   mentor.Reviews,
+		Sessions:  mentor.Sessions,
 	}
 
 	return c.Status(200).JSON(responseDTO)
 }
-
-//post method
 
 func MentorHandlerCreate(c *fiber.Ctx) error {
 	mentor := new(dto.MentorCreateRequestDTO)
