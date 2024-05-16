@@ -15,6 +15,8 @@ type Mentor struct {
 	Email     string         `json:"email" gorm:"unique"`
 	Bio       string         `json:"bio"`
 	Photo     string         `json:"photo"`
+	Reviews   int            `json:"reviews"`
+	Sessions  int            `json:"sessions"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
