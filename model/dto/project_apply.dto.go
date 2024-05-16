@@ -6,7 +6,6 @@ import (
 
 type ProjectApplyRequestDTO struct {
 	ProjectID uuid.UUID `json:"project_id" validate:"required"`
-	UserID    uuid.UUID `json:"user_id" validate:"required"`
 	Progress  float64   `json:"progress" validate:"required"`
 }
 

@@ -11,6 +11,7 @@ type ProjectRegisterRequestDTO struct {
 	Name             string      `json:"name" validate:"required"`
 	Description      string      `json:"description" validate:"required"`
 	ShortDescription string      `json:"short_description" validate:"required"`
+	Price            int         `json:"price" validate:"required"`
 	MetodeBelajar    string      `json:"metode_belajar" validate:"required"`
 	PeralatanBelajar string      `json:"peralatan_belajar" validate:"required"`
 	Silabus          string      `json:"silabus" validate:"required"`
@@ -28,6 +29,7 @@ type ProjectRegisterResponseDTO struct {
 	Name             string    `json:"name"`
 	Description      string    `json:"description"`
 	ShortDescription string    `json:"short_description"`
+	Price            int       `json:"price"`
 	MetodeBelajar    string    `json:"metode_belajar"`
 	PeralatanBelajar string    `json:"peralatan_belajar"`
 	Silabus          string    `json:"silabus"`
@@ -41,6 +43,7 @@ type ProjectGetResponseDTO struct {
 	Name               string         `json:"name"`
 	ProjectDescription string         `json:"project_description"`
 	ShortDescription   string         `json:"short_description"`
+	Price              int            `json:"price"`
 	MetodeBelajar      string         `json:"metode_belajar"`
 	PeralatanBelajar   string         `json:"peralatan_belajar"`
 	Silabus            string         `json:"silabus"`

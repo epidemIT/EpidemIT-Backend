@@ -22,6 +22,7 @@ type Project struct {
 	Name               string         `json:"name"`
 	ProjectDescription string         `json:"project_description"`
 	ShortDescription   string         `json:"short_description"`
+	Price              int            `json:"price"`
 	MetodeBelajar      string         `json:"metode_belajar"`
 	PeralatanBelajar   string         `json:"peralatan_belajar"`
 	Silabus            string         `json:"silabus"`

@@ -104,6 +104,7 @@ func ProjectHandlerGetAll(c *fiber.Ctx) error {
 			Name:               project.Name,
 			ProjectDescription: project.ProjectDescription,
 			ShortDescription:   project.ShortDescription,
+			Price:              project.Price,
 			MetodeBelajar:      project.MetodeBelajar,
 			PeralatanBelajar:   project.PeralatanBelajar,
 			Silabus:            project.Silabus,
@@ -149,6 +150,7 @@ func ProjectHandlerGetByID(c *fiber.Ctx) error {
 		Name:               project.Name,
 		ProjectDescription: project.ProjectDescription,
 		ShortDescription:   project.ShortDescription,
+		Price:              project.Price,
 		MetodeBelajar:      project.MetodeBelajar,
 		PeralatanBelajar:   project.PeralatanBelajar,
 		Silabus:            project.Silabus,
@@ -180,6 +182,7 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 		Name:               requestDTO.Name,
 		ProjectDescription: requestDTO.Description,
 		ShortDescription:   requestDTO.ShortDescription,
+		Price:              requestDTO.Price,
 		MetodeBelajar:      requestDTO.MetodeBelajar,
 		PeralatanBelajar:   requestDTO.PeralatanBelajar,
 		Silabus:            requestDTO.Silabus,
@@ -205,6 +208,7 @@ func ProjectHandlerCreate(c *fiber.Ctx) error {
 		Name:             project.Name,
 		Description:      project.ProjectDescription,
 		ShortDescription: project.ShortDescription,
+		Price:            project.Price,
 		MetodeBelajar:    project.MetodeBelajar,
 		PeralatanBelajar: project.PeralatanBelajar,
 		Silabus:          project.Silabus,
@@ -350,6 +354,7 @@ func GetAllProjectAppliedByUserID(c *fiber.Ctx) error {
 				Name:               project.Name,
 				ProjectDescription: project.ProjectDescription,
 				ShortDescription:   project.ShortDescription,
+				Price:              project.Price,
 				MetodeBelajar:      project.MetodeBelajar,
 				PeralatanBelajar:   project.PeralatanBelajar,
 				Silabus:            project.Silabus,
@@ -418,6 +423,7 @@ func GetProjectApplyByProjectIDAndUserID(c *fiber.Ctx) error {
 			Name:               project.Name,
 			ProjectDescription: project.ProjectDescription,
 			ShortDescription:   project.ShortDescription,
+			Price:              project.Price,
 			MetodeBelajar:      project.MetodeBelajar,
 			PeralatanBelajar:   project.PeralatanBelajar,
 			Silabus:            project.Silabus,
@@ -493,7 +499,7 @@ func SendFinancialAidEmail(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
-  
+
 	type EmailData struct {
 		Username string
 		Project  string
@@ -515,20 +521,20 @@ func SendFinancialAidEmail(c *fiber.Ctx) error {
 		"message": "Email sent successfully",
 	})
 }
-  
- func ProjectHandlerGetAllAvailable(c *fiber.Ctx) error {
+
+func ProjectHandlerGetAllAvailable(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 
 	token := strings.TrimPrefix(authHeader, "Bearer ")
-  claims, err := utils.VerifyToken(token)
+	claims, err := utils.VerifyToken(token)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Error verifying token",
 			"error":   err.Error(),
 		})
 	}
-   
-  var user entity.User
+
+	var user entity.User
 	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -536,7 +542,7 @@ func SendFinancialAidEmail(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
-   
+
 	var projects []entity.Project
 	results := database.DB.Find(&projects)
 
@@ -579,6 +585,7 @@ func SendFinancialAidEmail(c *fiber.Ctx) error {
 			Name:               project.Name,
 			ProjectDescription: project.ProjectDescription,
 			ShortDescription:   project.ShortDescription,
+			Price:              project.Price,
 			MetodeBelajar:      project.MetodeBelajar,
 			PeralatanBelajar:   project.PeralatanBelajar,
 			Silabus:            project.Silabus,
