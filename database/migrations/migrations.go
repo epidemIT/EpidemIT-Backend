@@ -1,9 +1,10 @@
 package migrations
 
 import (
+	"fmt"
+
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/model/entity"
-	"fmt"
 
 	"log"
 )
@@ -14,7 +15,7 @@ func RunMigrations() {
 		log.Fatal("Database connection is nil")
 	}
 
-	err := database.DB.AutoMigrate(&entity.User{}, &entity.Mentor{}, &entity.Project{}, &entity.Skill{}, &entity.ProjectApply{})
+	err := database.DB.AutoMigrate(&entity.User{}, &entity.Mentor{}, &entity.Project{}, &entity.Skill{}, &entity.ProjectApply{}, &entity.MentorApply{})
 
 	if err != nil {
 		log.Fatal("Failed to migrate database", err)

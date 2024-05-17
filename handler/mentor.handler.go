@@ -3,10 +3,12 @@ package handler
 import (
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/model/dto"
 	"github.com/epidemIT/epidemIT-Backend/model/entity"
+	"github.com/epidemIT/epidemIT-Backend/utils"
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gofiber/fiber/v2"
@@ -145,4 +147,144 @@ func handleError(c *fiber.Ctx, message string, err error) error {
 		"message": message,
 		"error":   err.Error(),
 	})
+}
+
+func MentorApplyRegister(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := utils.VerifyToken(token)
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error verifying token",
+			"error":   err.Error(),
+		})
+	}
+
+	body := new(dto.MentorApplyRequestDTO)
+
+	if err := c.BodyParser(body); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error parsing request",
+			"error":   err.Error(),
+		})
+	}
+
+	validate := validator.New()
+	errValidate := validate.Struct(body)
+
+	if errValidate != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error validating request",
+			"error":   errValidate.Error(),
+		})
+	}
+
+	var user entity.User
+	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting user",
+			"error":   err.Error(),
+		})
+	}
+
+	var mentor entity.Mentor
+	err = database.DB.Where("id = ?", body.MentorID).First(&mentor).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting project",
+			"error":   err.Error(),
+		})
+	}
+
+	mentor.Mentees = append(mentor.Mentees, user)
+	mentorApply := entity.MentorApply{
+		MentorID: mentor.ID,
+		UserID:   user.ID,
+		Date:     body.Date,
+	}
+
+	results := database.DB.Save(&mentor)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error applying to mentor",
+			"error":   results.Error,
+		})
+	}
+
+	results = database.DB.Create(&mentorApply)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error applying to project",
+			"error":   results.Error,
+		})
+	}
+
+	return c.Status(201).JSON(fiber.Map{
+		"message": "Applied to mentor successfully",
+		"id":      mentorApply.ID,
+		"mentor":  mentorApply.MentorID,
+		"user_id": mentorApply.UserID,
+		"date":    mentorApply.Date,
+	})
+}
+
+func GetAllMentorAppliedByUserID(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := utils.VerifyToken(token)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error verifying token",
+			"error":   err.Error(),
+		})
+	}
+
+	var user entity.User
+	err = database.DB.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Error getting user",
+			"error":   err.Error(),
+		})
+	}
+
+	var mentorApplies []entity.MentorApply
+	results := database.DB.Where("user_id = ?", user.ID).Find(&mentorApplies)
+
+	if results.Error != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": results.Error,
+		})
+	}
+
+	responseDTO := make([]dto.MentorApplyGetByUserIDResponseDTO, len(mentorApplies))
+
+	for i, mentorApply := range mentorApplies {
+		var mentor entity.Mentor
+		results := database.DB.Where("id = ?", mentorApply.MentorID).First(&mentor)
+
+		if results.Error != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"message": results.Error,
+			})
+		}
+
+		responseDTO[i] = dto.MentorApplyGetByUserIDResponseDTO{
+			ID:     mentorApply.ID,
+			UserID: mentorApply.UserID,
+			Mentor: dto.MentorGetResponseDTO{
+				ID:       mentor.ID,
+				FullName: mentor.FullName,
+				Photo:    mentor.Photo,
+			},
+		}
+	}
+
+	return c.Status(200).JSON(responseDTO)
 }

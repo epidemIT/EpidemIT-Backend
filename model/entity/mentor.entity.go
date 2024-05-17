@@ -17,6 +17,7 @@ type Mentor struct {
 	Photo     string         `json:"photo"`
 	Reviews   int            `json:"reviews"`
 	Sessions  int            `json:"sessions"`
+	Mentees   []User         `gorm:"many2many:user_mentor;"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`

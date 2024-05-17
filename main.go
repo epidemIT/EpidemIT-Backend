@@ -1,16 +1,22 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/epidemIT/epidemIT-Backend/database"
 	"github.com/epidemIT/epidemIT-Backend/database/migrations"
 	"github.com/epidemIT/epidemIT-Backend/route"
-	"log"
-	"os"
+	"github.com/joho/godotenv"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file", err)
+	}
 	database.InitDatabase()
 	migrations.RunMigrations()
 
